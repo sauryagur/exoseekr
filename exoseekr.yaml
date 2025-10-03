@@ -1,0 +1,495 @@
+# Project Plan for NASA Space Apps Challenge 2025: Exoplanet Detection with AI
+project:
+  name: exoseekr
+  challenge: A World Away - Hunting for Exoplanets with AI
+  version: 1.0.0
+  description: AI-driven system to detect exoplanet transits in TESS/Kepler light curves, with a Next.js + D3.js web interface, custom PyTorch model, PostgreSQL with TimescaleDB, and MLOps CI/CD pipeline.
+  timeline:
+    prep: 2025-09-28 to 2025-10-02
+    hackathon: 2025-10-03 to 2025-10-05
+    submission_deadline: 2025-10-05
+  team_roles:
+    - project_manager: Oversee timelines, deliverables, risks
+    - backend_developer: Python, FastAPI, PyTorch
+    - frontend_developer: Next.js, D3.js
+    - ml_engineer: Custom PyTorch model, MLOps
+    - designer_tester: Onboarding, UI/UX, testing
+
+# Challenge Requirements
+challenge:
+  objectives:
+    - develop: AI tools for exoplanet transit detection
+    - data: TESS/Kepler light curves
+    - challenges:
+        - handle: Noisy/incomplete data
+        - reduce: False positives (e.g., eclipsing binaries)
+        - visualize: Interactive dashboards for astronomers
+    - datasets: NASA MAST portal (open access)
+  eligibility: 18+ or parental consent
+  team_size: 1-5 members
+  event_dates: 2025-10-03 to 2025-10-05
+  registration: spaceappschallenge.org
+  evaluation_criteria:
+    innovation: 30%
+    impact: 25%
+    technical_implementation: 20%
+    presentation: 15%
+    feasibility: 10%
+  constraints:
+    - use: Open-source tools
+    - ethics: Avoid model bias, ensure interpretability
+    - privacy: Use public NASA data only
+
+# Deliverables
+deliverables:
+  prototype:
+    description: Backend pipeline + frontend dashboard
+    components:
+      - backend: Python, FastAPI, PyTorch
+      - frontend: Next.js, D3.js
+      - database: PostgreSQL with TimescaleDB
+      - deployment: Local (Docker), Cloud (AWS EC2, Vercel)
+    demo: Sample TESS light curve with detected transit
+  demo_video:
+    duration: 3-5 minutes
+    content:
+      - onboarding: Backend setup, frontend tour
+      - pipeline: Data ingestion to visualization
+      - results: Model predictions, dashboard interaction
+      - impact: Highlight automation benefits
+  documentation:
+    readme:
+      file: README.md
+      sections: [setup, usage, faq, expert_config]
+    api_docs: docs/api.md
+    technical_report:
+      file: report.pdf
+      content: [challenge_alignment, methodology, results]
+  code:
+    repository: github.com/your-team/exoplanet-detection
+    license: MIT
+  extras:
+    - dashboard_url: http://localhost:3000 or https://exoplanet-app.vercel.app
+    - model_artifacts: models/cnn_model.pth
+    - metrics: Precision, Recall, F1-score on Kepler test set
+
+# System Design
+system:
+  architecture:
+    backend:
+      language: python
+      version: 3.8
+      framework: fastapi
+      dependencies:
+        - pandas
+        - astropy
+        - numpy
+        - scipy
+        - torch
+        - optuna
+        - fastapi
+        - sqlalchemy
+        - psycopg2
+        - boto3
+        - pytest
+        - flake8
+        - dvc
+        - mlflow
+      modules:
+        data_ingestion:
+          description: Load TESS/Kepler light curves
+          inputs:
+            - sample_data: data/sample_tess.csv
+            - api: https://mast.stsci.edu/api/v0.1
+            - custom: csv,fits
+          outputs:
+            - format: time_series
+              fields: [star_id, time, flux, error]
+          storage: postgresql
+          tools: [pandas, astropy, requests, sqlalchemy]
+          commands:
+            novice: python load_data.py --sample
+            expert: python load_data.py --api --star-id TIC123456789
+        preprocessing:
+          description: Clean and prepare light curves
+          steps:
+            - detrend: savitzky_golay
+            - normalize: min_max
+            - outliers: sigma_clipping
+            - features: [transit_depth, period, folded_light_curve]
+          config: config.yaml
+          outputs:
+            - format: feature_set
+              fields: [star_id, time, flux, features]
+          storage: postgresql
+          tools: [pandas, numpy, astropy]
+          commands:
+            novice: python preprocess.py
+            expert: python preprocess.py --config config.yaml
+        machine_learning:
+          description: Detect transits using custom PyTorch model
+          model:
+            type: cnn
+            architecture:
+              layers:
+                - conv1d: {filters: 16, kernel_size: 3}
+                - conv1d: {filters: 32, kernel_size: 3}
+                - dense: {units: 1}
+              activation: relu
+              dropout: 0.3
+            loss: binary_cross_entropy
+            optimizer: adam
+            learning_rate: 0.001
+          training:
+            dataset: kepler_labeled
+            fine_tune: tess
+            split: {train: 0.7, val: 0.15, test: 0.15}
+            tuning: optuna
+            versioning: dvc, mlflow
+          inference:
+            threshold: 0.8
+            outputs: [transit, non_transit, confidence]
+          pretrained: models/cnn_model.pth
+          storage: postgresql, s3
+          tools: [torch, optuna, dvc, mlflow]
+          commands:
+            novice: python predict.py
+            expert: python train.py --model cnn --config config.yaml
+        post_processing:
+          description: Refine predictions
+          steps:
+            - filter: {confidence_threshold: 0.8}
+            - parameters: [period, depth]
+            - rules: [eclipsing_binary_check]
+          outputs:
+            - format: candidates
+              fields: [star_id, transit_prob, period, depth]
+          storage: postgresql
+          tools: [numpy]
+        api:
+          endpoints:
+            - /load: {method: POST, description: Load data}
+            - /predict: {method: POST, description: Run inference}
+            - /results: {method: GET, description: Fetch predictions}
+          tools: [fastapi, uvicorn]
+          port: 8000
+    frontend:
+      framework: nextjs
+      version: 14
+      dependencies:
+        - d3
+        - axios
+        - react-joyride
+      pages:
+        - path: /
+          description: Home with onboarding tour
+          components: [welcome, load_button]
+        - path: /dashboard
+          description: Interactive light curve plots and predictions
+          components: [d3_plot, results_table]
+        - path: /upload
+          description: Upload custom data
+          components: [file_uploader]
+        - path: /help
+          description: FAQ and tutorial
+          components: [video, glossary]
+      visualizations:
+        library: d3
+        plots:
+          - type: line
+            data: light_curve
+            fields: [phase, flux]
+            features: [zoom, pan, tooltips]
+            highlights: transit_points
+            export: [png, svg]
+      onboarding:
+        tool: react-joyride
+        steps:
+          - target: .load-button
+            content: Click to load sample TESS data
+          - target: .plot
+            content: View light curve with transits
+          - target: .results
+            content: See predictions and confidence scores
+        tooltips:
+          - term: transit
+            description: A dip in brightness when a planet passes a star
+          - term: light_curve
+            description: Time-series of star brightness
+        help_page:
+          video: tutorial.mp4
+          glossary: [transit, light_curve, confidence_score]
+      tools: [nextjs, d3, axios, react-joyride]
+      port: 3000
+    database:
+      type: postgresql
+      extension: timescaledb
+      version: 15
+      schema:
+        tables:
+          - light_curves:
+              type: hypertable
+              columns: [star_id, time, flux, error]
+              indexes: [star_id, time]
+          - preprocessed_data:
+              columns: [star_id, time, flux, features_jsonb]
+          - predictions:
+              columns: [star_id, transit_prob, period, depth]
+          - models:
+              columns: [id, weights_blob]
+      local:
+        docker_image: timescale/timescaledb:latest-pg15
+        connection: postgresql://user:password@localhost:5432/exoplanet
+      cloud:
+        provider: aws
+        service: rds
+        connection: postgresql://user:password@rds-host:5432/exoplanet
+      tools: [sqlalchemy, psycopg2]
+      justification:
+        - fit: Efficient for time-series (light curves) with TimescaleDB hypertables
+        - scalability: Handles TB-scale TESS data via partitioning
+        - advantages_over_sqlite: Concurrency, scalability, time-series optimization
+        - advantages_over_mongodb: SQL support, ACID compliance
+        - advantages_over_influxdb: Broader ecosystem, PostgreSQL compatibility
+    deployment:
+      local:
+        backend:
+          command: python app.py
+          port: 8000
+          host: localhost
+        frontend:
+          command: cd frontend && npm run dev
+          port: 3000
+          host: localhost
+        docker:
+          compose_file: docker-compose.yml
+          services:
+            - backend: exoplanet-app
+            - frontend: exoplanet-app
+            - database: timescale/timescaledb
+          ports: [3000:3000, 8000:8000, 5432:5432]
+      cloud:
+        backend:
+          platform: aws
+          service: ec2
+          instance: t2.micro
+          storage: s3
+          registry: ecr
+        frontend:
+          platform: vercel
+          command: vercel deploy
+        database:
+          platform: aws
+          service: rds
+          instance: db.t3.micro
+        storage:
+          provider: aws
+          service: s3
+          bucket: exoplanet-data
+  onboarding:
+    backend:
+      setup_script: setup.sh
+      steps:
+        - install_python: pip install -r requirements.txt
+        - install_node: cd frontend && npm install
+        - load_sample: python load_data.py --sample
+        - start: python app.py
+      readme:
+        file: README.md
+        sections: [setup, usage, faq, expert_config]
+        screenshots: [terminal, dashboard]
+      sample_workflow: python demo.py
+      error_handling:
+        - error: module_not_found
+          solution: pip install <module>
+        - error: db_connection
+          solution: docker-compose up -d
+      expert:
+        config_file: config.yaml
+        api_docs: docs/api.md
+    frontend:
+      guided_tour: react-joyride
+      steps:
+        - target: .load-button
+          content: Click to load sample TESS data
+        - target: .plot
+          content: View light curve with transits
+        - target: .results
+          content: See predictions and confidence scores
+      tooltips:
+        - term: transit
+          description: A dip in brightness when a planet passes a star
+        - term: light_curve
+          description: Time-series of star brightness
+      help_page:
+        path: /help
+        video: tutorial.mp4
+        glossary: [transit, light_curve, confidence_score]
+  storage:
+    local:
+      type: postgresql
+      file: data.db
+    cloud:
+      type: s3
+      bucket: exoplanet-data
+      region: us-east-1
+    outputs:
+      - raw_data
+      - preprocessed_data
+      - model_weights: models/cnn_model.pth
+      - predictions
+
+# MLOps CI/CD Pipeline
+mlops_ci_cd:
+  platform: github_actions
+  workflow_file: .github/workflows/mlops-ci-cd.yml
+  triggers:
+    - push: main
+    - pull_request: main
+    - manual: workflow_dispatch
+  jobs:
+    lint:
+      runs_on: ubuntu-latest
+      steps:
+        - checkout: actions/checkout@v3
+        - setup_python:
+            action: actions/setup-python@v4
+            version: 3.8
+        - install_deps: pip install -r requirements.txt
+        - lint_backend:
+            tool: flake8
+            command: flake8 .
+        - lint_frontend:
+            tool: eslint
+            command: cd frontend && npm install && npx eslint .
+    test:
+      runs_on: ubuntu-latest
+      needs: lint
+      steps:
+        - checkout: actions/checkout@v3
+        - setup_python:
+            action: actions/setup-python@v4
+            version: 3.8
+        - install_deps: pip install -r requirements.txt
+        - test_backend:
+            tool: pytest
+            command: pytest tests/
+            cases: [preprocessing, model_inference]
+        - test_frontend:
+            tool: jest
+            command: cd frontend && npm test
+            cases: [components, api_calls]
+    train_evaluate:
+      runs_on: ubuntu-latest
+      needs: test
+      steps:
+        - checkout: actions/checkout@v3
+        - setup_python:
+            action: actions/setup-python@v4
+            version: 3.8
+        - install_deps: pip install -r requirements.txt
+        - version_data:
+            tool: dvc
+            command: dvc pull
+        - train_model:
+            command: python train.py --config config.yaml
+            params: [learning_rate, layers]
+        - evaluate_model:
+            command: python evaluate.py
+            metrics: [precision, recall, f1_score]
+            threshold: 0.9
+        - log_mlflow:
+            tool: mlflow
+            command: mlflow ui --backend-store-uri sqlite:///mlflow.db
+            env:
+              MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_URI }}
+    build:
+      runs_on: ubuntu-latest
+      needs: train_evaluate
+      steps:
+        - checkout: actions/checkout@v3
+        - build_docker:
+            command: docker build -t exoplanet-app:${{ github.sha }} .
+        - build_frontend:
+            command: cd frontend && npm run build
+    deploy:
+      runs_on: ubuntu-latest
+      needs: build
+      if: github.ref == 'refs/heads/main'
+      steps:
+        - checkout: actions/checkout@v3
+        - login_ecr:
+            action: aws-actions/amazon-ecr-login@v1
+        - push_docker:
+            command: docker push ${{ secrets.AWS_ECR_REPO }}/exoplanet-app:${{ github.sha }}
+        - deploy_ec2:
+            action: appleboy/ssh-action@v0.1
+            host: ${{ secrets.EC2_HOST }}
+            username: ${{ secrets.EC2_USER }}
+            key: ${{ secrets.EC2_KEY }}
+            script: |
+              docker pull ${{ secrets.AWS_ECR_REPO }}/exoplanet-app:${{ github.sha }}
+              docker stop exoplanet-app || true
+              docker rm exoplanet-app || true
+              docker run -d --name exoplanet-app -p 8000:8000 -e DB_URL=${{ secrets.DB_URL }} ${{ secrets.AWS_ECR_REPO }}/exoplanet-app:${{ github.sha }}
+        - deploy_vercel:
+            action: amondnet/vercel-action@v20
+            vercel_token: ${{ secrets.VERCEL_TOKEN }}
+            vercel_org_id: ${{ secrets.VERCEL_ORG_ID }}
+            vercel_project_id: ${{ secrets.VERCEL_PROJECT_ID }}
+  environment:
+    secrets:
+      - AWS_ACCESS_KEY
+      - AWS_SECRET_KEY
+      - VERCEL_TOKEN
+      - MLFLOW_URI
+      - EC2_HOST
+      - EC2_USER
+      - EC2_KEY
+      - DB_URL
+      - AWS_ECR_REPO
+  mlops_features:
+    model_registry: mlflow
+    data_versioning: dvc
+    monitoring: mlflow_metrics
+    rollback: tagged_docker_images
+
+# Visualization Configuration
+visualization:
+  type: line
+  library: d3
+  data:
+    light_curve:
+      fields: [phase, flux]
+      sample: [-0.5, -0.4, -0.3, -0.2, -0.1, 0, 0.1, 0.2, 0.3, 0.4, 0.5]
+      values: [1.0, 1.0, 1.0, 0.99, 0.98, 0.95, 0.98, 0.99, 1.0, 1.0, 1.0]
+    transit_points:
+      fields: [phase, flux]
+      sample: [-0.1, 0, 0.1]
+      values: [0.98, 0.95, 0.98]
+  options:
+    title: TESS Light Curve with Detected Transit
+    x_axis: Phase (Normalized)
+    y_axis: Normalized Flux
+    y_range: [0.9, 1.1]
+    features: [zoom, pan, tooltips]
+    export: [png, svg]
+
+# Risks and Mitigation
+risks:
+  - risk: Time constraints in hackathon
+    mitigation: Prioritize MVP with pre-trained model and sample data
+  - risk: Data scale overwhelms local setup
+    mitigation: Use PostgreSQL partitioning; cloud fallback (AWS RDS, S3)
+  - risk: Model underperformance
+    mitigation: Benchmark on Kepler; tune with Optuna
+  - risk: CI/CD failures
+    mitigation: Test pipeline locally; use free-tier GitHub Actions
+  - budget: Use free tiers (GitHub, AWS, Vercel)
+
+# Next Steps for Project Manager
+next_steps:
+  - assign_tasks: Based on team roles
+  - schedule_standups: Daily from 2025-09-29 to 2025-10-05
+  - monitor_progress: GitHub issues
+  - prepare_submission: Checklist for deliverables by 2025-10-05
