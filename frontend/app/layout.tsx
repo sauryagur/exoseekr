@@ -1,4 +1,10 @@
-import type React from \"react\"\nimport type { Metadata } from \"next\"\nimport { GeistSans } from \"geist/font/sans\"\nimport { GeistMono } from \"geist/font/mono\"\nimport { Suspense } from \"react\"\n// import { AppTour } from \"@/components/app-tour\" // Temporarily disabled for React 19 compatibility\nimport \"./globals.css\""
+import type React from "react"
+import type { Metadata } from "next"
+import { GeistSans } from "geist/font/sans"
+import { GeistMono } from "geist/font/mono"
+import { Suspense } from "react"
+import { AppTour } from "@/components/simple-tour"
+import "./globals.css"
 
 export const metadata: Metadata = {
   title: {
@@ -62,7 +68,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-                <Suspense fallback={null}>{children}</Suspense>\n        {/* <AppTour /> Temporarily disabled for React 19 compatibility */}"
+                <Suspense fallback={null}>{children}</Suspense>\n        <AppTour />"
       </body>
     </html>
   )
