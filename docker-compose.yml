@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  exoseekr:
+    build: .
+    container_name: exoseekr-app
+    ports:
+      - "3000:3000"  # Frontend (Next.js)
+      - "8000:8000"  # Backend (FastAPI)
+    volumes:
+      - models:/app/models  # persistent model storage (mutable + backup)
+      - data:/app/data      # dataset storage
+      - uploads:/app/uploads # user uploaded datasets
+    environment:
+      - NODE_ENV=production
+      - PYTHONPATH=/app/backend
+      - BACKEND_URL=http://localhost:8000
+      - FRONTEND_URL=http://localhost:3000
+      - PM2_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health && curl -f http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - exoseekr-network
+
+volumes:
+  models:
+    name: exoseekr_models
+    driver: local
+  data:
+    name: exoseekr_data
+    driver: local
+  uploads:
+    name: exoseekr_uploads
+    driver: local
+
+networks:
+  exoseekr-network:
+    name: exoseekr-network
+    driver: bridge
