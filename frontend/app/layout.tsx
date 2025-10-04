@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Suspense } from "react"
-import { AppTour } from "@/components/simple-tour"
+import { AppTour } from "@/components/app-tour"
 import "./globals.css"
 
 export const metadata: Metadata = {
