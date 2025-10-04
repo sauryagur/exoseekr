@@ -153,14 +153,14 @@ const tourSteps: Step[] = [
 
 export function AppTour() {
   const [run, setRun] = useState(false)
-  const pathname = usePathname()
+  const [isClient, setIsClient] = useState(false)
+  const [hasSeenTour, setHasSeenTour] = useState(true) 
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
-    // Check if user has seen the tour
     const hasSeenTour = localStorage.getItem("exoseekr-tour-completed")
     if (!hasSeenTour) {
-      // Auto-start tour for first-time users
       setRun(true)
     }
   }, [])
@@ -171,11 +171,12 @@ export function AppTour() {
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status as any)) {
       setRun(false)
       localStorage.setItem("exoseekr-tour-completed", "true")
+      setHasSeenTour(true)
     }
 
-    // Navigate to different pages during the tour
+    
     if (action === "next" || action === "prev") {
-      // Navigate based on step index
+      
       if (index === 5 && pathname !== "/upload") {
         router.push("/upload")
       } else if (index === 6 && pathname !== "/models") {
@@ -194,16 +195,48 @@ export function AppTour() {
 
   const startTour = () => {
     setRun(true)
-    // Navigate to dashboard to start tour
+    
     if (pathname !== "/") {
       router.push("/")
     }
   }
 
-  // Expose startTour function globally
+  const resetAndStartTour = () => {
+    localStorage.removeItem("exoseekr-tour-completed")
+    setHasSeenTour(false)
+    startTour()
+  }
+  useEffect(() => {
+    setIsClient(true)
+    
+    
+    const tourCompleted = localStorage.getItem('exoseekr-tour-completed')
+    if (!tourCompleted) {
+      setHasSeenTour(false)
+      
+      const timer = setTimeout(() => {
+        setRun(true)
+      }, 1500)
+      return () => clearTimeout(timer)
+    }
+  }, [])
+
+  
   useEffect(() => {
     ;(window as any).startExoseekrTour = startTour
-  }, [])
+    ;(window as any).resetExoseekrTour = resetAndStartTour
+    
+    ;(window as any).clearExoseekrTour = () => {
+      localStorage.removeItem("exoseekr-tour-completed")
+      setHasSeenTour(false)
+      console.log("Tour completion flag cleared. Refresh page to see tour on next visit.")
+    }
+  }, [startTour, resetAndStartTour])
+
+  
+  if (!isClient) {
+    return null
+  }
 
   return (
     <Joyride
