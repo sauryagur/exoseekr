@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { Suspense } from "react"
@@ -53,11 +53,12 @@ export const metadata: Metadata = {
     title: "ExoSeekr - AI Exoplanet Detection Platform",
     description: "Professional AI-driven platform for detecting exoplanet transits in TESS/Kepler light curves",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 }
 
 export default function RootLayout({
@@ -68,7 +69,8 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-                <Suspense fallback={null}>{children}</Suspense>\n        <AppTour />"
+        <Suspense fallback={null}>{children}</Suspense>
+        <AppTour />
       </body>
     </html>
   )
