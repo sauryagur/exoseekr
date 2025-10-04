@@ -8,8 +8,8 @@ import "./globals.css"
 
 export const metadata: Metadata = {
   title: {
-    default: "ExoSeekr - AI Exoplanet Detection Platform",
-    template: "%s | ExoSeekr"
+    default: "exoseekr - AI Exoplanet Detection Platform",
+    template: "%s | exoseekr"
   },
   description: "Professional AI-driven platform for detecting exoplanet transits in TESS/Kepler light curves. Built for astronomical research with machine learning techniques.",
   keywords: [
@@ -29,9 +29,9 @@ export const metadata: Metadata = {
     { name: "Muhir Kapoor" },
     { name: "Saurya Gur" }
   ],
-  creator: "ExoSeekr Research Team",
-  publisher: "ExoSeekr",
-  applicationName: "ExoSeekr",
+  creator: "exoseekr Research Team",
+  publisher: "exoseekr",
+  applicationName: "exoseekr",
   classification: "Research Software",
   category: "Scientific Research",
   robots: {
@@ -42,15 +42,15 @@ export const metadata: Metadata = {
     noimageindex: true,
   },
   openGraph: {
-    title: "ExoSeekr - AI Exoplanet Detection Platform",
+    title: "exoseekr - AI Exoplanet Detection Platform",
     description: "Professional AI-driven platform for detecting exoplanet transits in TESS/Kepler light curves",
     type: "website",
     locale: "en_US",
-    siteName: "ExoSeekr",
+    siteName: "exoseekr",
   },
   twitter: {
     card: "summary",
-    title: "ExoSeekr - AI Exoplanet Detection Platform",
+    title: "exoseekr - AI Exoplanet Detection Platform",
     description: "Professional AI-driven platform for detecting exoplanet transits in TESS/Kepler light curves",
   },
 }
